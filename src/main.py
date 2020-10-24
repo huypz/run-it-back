@@ -1,8 +1,6 @@
 import azure.cognitiveservices.speech as speechsdk
-import pyaudio
-import wave
-import os
-import time
+from gui import *
+import pyaudio, wave, os, time
 
 speech_key, service_region = "0b7fca8db83b454cab8ea579c7bb92aa", "eastus"
 speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
@@ -40,6 +38,7 @@ done = False
 keyword = "run it back"
 enable_playback = True
 record_seconds = 5
+enable_logs = True
 
 def main():
     # get devices and set default
@@ -50,12 +49,12 @@ def main():
             wasapi_devices[i] = device["name"]
     process_devices()
 
+    gui = GUI()
+    gui.root.mainloop()
+
     #speech_recognizer.recognizing.connect(lambda evt: print('RECOGNIZING: {}'.format(evt)))
-    speech_recognizer.recognized.connect(process_input)
-    start()
-
-
-
+    # speech_recognizer.recognized.connect(process_input)
+    # start()
 
 
 def start():
@@ -76,6 +75,7 @@ def stop():
     done = True
     time.sleep(1)
     p.terminate()
+
 
 def process_input(evt):
     if evt.result.reason == speechsdk.ResultReason.RecognizedSpeech:
@@ -166,6 +166,15 @@ def play_audio(file_name):
         data = wf.readframes(CHUNK)
 
     stream.close()
+
+
+def log_audio(file_name):
+    audio_input = speechsdk.AudioConfig(filename=file_name)
+    speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_input)
+
+    result = speech_recognizer.recognize_once_async().get()
+    print(result.text)
+
 
 
 if __name__ == "__main__":
