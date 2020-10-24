@@ -39,7 +39,7 @@ enable_playback = True
 record_seconds = 5
 enable_logs = True
 
-def start():
+def start(gui):
     # get devices and set default
     for i in range(0, p.get_device_count()):
         device = p.get_device_info_by_index(i)
@@ -50,7 +50,7 @@ def start():
     process_devices()
     speech_recognizer.recognized.connect(process_input)
     speech_recognizer.start_continuous_recognition()
-    print("Speak into your microphone or say STOP to terminate the program.")
+    gui.print("Speak into your microphone or say STOP to terminate the program.")
     record_device()
     global done_recording
     done_recording = False
@@ -58,7 +58,7 @@ def start():
     done = False
 
 
-def stop():
+def stop(gui):
     speech_recognizer.stop_continuous_recognition()
     global done_recording
     done_recording = True
