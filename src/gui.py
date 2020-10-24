@@ -1,5 +1,5 @@
 import tkinter as tk
-from main import *
+import runitback as rib
 
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 
@@ -24,10 +24,16 @@ class GUI():
 
 
 def on_btn_start_click(self):
-    start()
+    rib.start()
 
 def on_btn_stop_click(self):
     self.root.destroy()
-    stop()
+    rib.stop()
+
+def main():
+    gui = GUI()
+    gui.root.mainloop()
 
 
+if __name__ == "__main__":
+    main()

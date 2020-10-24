@@ -1,6 +1,5 @@
 import azure.cognitiveservices.speech as speechsdk
 import pyaudio, wave, os, time
-import gui as g
 
 speech_key, service_region = "0b7fca8db83b454cab8ea579c7bb92aa", "eastus"
 speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
@@ -39,15 +38,6 @@ keyword = "run it back"
 enable_playback = True
 record_seconds = 5
 enable_logs = True
-
-def main():
-    gui = g.GUI()
-    gui.root.mainloop()
-
-    #speech_recognizer.recognizing.connect(lambda evt: print('RECOGNIZING: {}'.format(evt)))
-    # speech_recognizer.recognized.connect(process_input)
-    # start()
-
 
 def start():
     # get devices and set default
@@ -175,8 +165,3 @@ def log_audio(file_name):
 
     result = speech_recognizer.recognize_once_async().get()
     print(result.text)
-
-
-
-if __name__ == "__main__":
-    main()
