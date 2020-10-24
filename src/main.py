@@ -1,6 +1,6 @@
 import azure.cognitiveservices.speech as speechsdk
-from gui import *
 import pyaudio, wave, os, time
+import gui as g
 
 speech_key, service_region = "0b7fca8db83b454cab8ea579c7bb92aa", "eastus"
 speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
@@ -41,15 +41,7 @@ record_seconds = 5
 enable_logs = True
 
 def main():
-    # get devices and set default
-    for i in range(0, p.get_device_count()):
-        device = p.get_device_info_by_index(i)
-        audio_devices[i] = device["name"]
-        if (p.get_host_api_info_by_index(device["hostApi"])["name"] == "Windows WASAPI"):
-            wasapi_devices[i] = device["name"]
-    process_devices()
-
-    gui = GUI()
+    gui = g.GUI()
     gui.root.mainloop()
 
     #speech_recognizer.recognizing.connect(lambda evt: print('RECOGNIZING: {}'.format(evt)))
@@ -58,6 +50,15 @@ def main():
 
 
 def start():
+    # get devices and set default
+    for i in range(0, p.get_device_count()):
+        device = p.get_device_info_by_index(i)
+        audio_devices[i] = device["name"]
+        if (p.get_host_api_info_by_index(device["hostApi"])["name"] == "Windows WASAPI"):
+            wasapi_devices[i] = device["name"]
+
+    process_devices()
+    speech_recognizer.recognized.connect(process_input)
     speech_recognizer.start_continuous_recognition()
     print("Speak into your microphone or say STOP to terminate the program.")
     record_device()
