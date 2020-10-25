@@ -134,6 +134,10 @@ class Rib:
         btn_stop.grid(row = 6, column = 0, sticky='ew', padx=4, pady=2)
         activate_frame.grid()
 
+        # image
+        img = tk.PhotoImage(file='blackHacktx.png')
+        img_display = tk.Label(self.window, image=img).place(x=1,y=266)
+
         self.window.protocol("WM_DELETE_WINDOW", self.close_window)
         self.window.mainloop()  # Create an event loop
 
