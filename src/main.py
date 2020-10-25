@@ -2,6 +2,8 @@ import threading
 import azure.cognitiveservices.speech as speechsdk
 import pyaudio, wave, os, time
 import tkinter as tk
+from tkinter import scrolledtext
+from ttkthemes import themed_tk as tttk
 
 speech_key, service_region = "0b7fca8db83b454cab8ea579c7bb92aa", "eastus"
 speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
@@ -19,20 +21,31 @@ RATE = 44100
 DEFAULT_FILE_NAME = "out.wav"
 MAX_RECORD_SECONDS = 1800
 
-#threadd
+#thread
 amd : object
 
 class Rib: 
     def __init__(self): 
-        window = tk.Tk()
+        window = tttk.ThemedTk(theme='vista', background=True)
         window.title("Run It Back")
+        #window.resizable(False, False)
 
-        tk.Label(window, text = "Output Device").grid(row = 1, column = 1, sticky = tk.W) 
-        tk.Label(window, text = "Playback Length (seconds)").grid(row = 2, column = 1, sticky = tk.W) 
-        tk.Label(window, text = "Key Phrase").grid(row = 3, column = 1, sticky = tk.W) 
-        tk.Label(window, text = "Audio File Name").grid(row = 4, column = 1, sticky = tk.W) 
-        #tk.Label(window, text = "Audio File Name").grid(row = 5, column = 1, sticky = tk.W) 
+        window.rowconfigure(0, minsize=0, weight=1)
+        window.columnconfigure(2, minsize=0, weight=1)
 
+        self.txt_scrolltxt = scrolledtext.ScrolledText(window)
+        self.txt_scrolltxt.grid(row=0, column=1, sticky = "nsew")
+        self.txt_scrolltxt.tag_config("azure", foreground="blue")
+        
+        # inputs
+        input_boxes = tk.ttk.Frame(window)
+        tk.ttk.Label(input_boxes, text = "Output Device").grid(row=0, column=0, sticky='w', padx=5, pady=2)
+        tk.ttk.Label(input_boxes, text = "Playback Length").grid(row=1, column=0, sticky='w', padx=5, pady=2)
+        tk.ttk.Label(input_boxes, text = "Key Phrase").grid(row=2, column=0, sticky='w', padx=5, pady=2)
+        tk.ttk.Label(input_boxes, text = "Audio File Name").grid(row=3, column=0, sticky='w', padx=5, pady=2)
+        tk.ttk.Label(input_boxes, text = "Translation Logs").grid(row=4, column=0, sticky='w', padx=5, pady=2)
+        input_boxes.grid(row=0, column=0, sticky='ns', pady=2)
+        #tk.Label(window, text = "Audio File Name").grid(row = 5, column = 1, sticky = tk.W)
 
         self.audio_devices = {}
         self.wasapi_devices = {}
@@ -41,7 +54,7 @@ class Rib:
         self.selected_device_id = -1
         self.playback_len = tk.StringVar(window)
         self.key_phrase = tk.StringVar(window)
-        self.logs_enabled = tk.StringVar(window)
+        self.is_translating = tk.StringVar(window)
         self.file_name = tk.StringVar(window)
 
         self.recorded_frames = []
@@ -57,35 +70,40 @@ class Rib:
                 self.wasapi_devices[i] = device["name"]
 
         device_names = []
-        # get device names and set default to wasapi speakers
+        # get device names and set default
         for key in self.wasapi_devices:
             device_info = p.get_device_info_by_index(key)
             device_names.append(device_info["name"])
-            if (device_info["maxOutputChannels"] > 0):
-                self.selected_device_name.set(device_info["name"])
 
         # selected device
-        opm_devices = tk.OptionMenu(window, self.selected_device_name, *device_names)
-        opm_devices.grid(row = 1, column = 2) 
+        self.opm_devices = tk.ttk.Combobox(input_boxes, values = device_names)
+        self.opm_devices.set(device_names[0])
+        self.opm_devices.grid(row=0, column=1, sticky='new', padx=5)
         # playback len
         self.playback_len.set(10) # default value
-        ent_playback_len = tk.Entry(window, textvariable = self.playback_len, justify = tk.RIGHT)
-        ent_playback_len.grid(row = 2, column = 2)
+        self.ent_playback_len = tk.ttk.Entry(input_boxes, textvariable = self.playback_len, justify = tk.RIGHT)
+        self.ent_playback_len.grid(row=1, column=1, sticky='new', padx=5)
         # key phrase
         self.key_phrase.set("run it back") # default value
-        ent_playback_len = tk.Entry(window, textvariable = self.key_phrase, justify = tk.RIGHT)
-        ent_playback_len.grid(row = 3, column = 2)
+        self.ent_keyphrase = tk.ttk.Entry(input_boxes, textvariable = self.key_phrase, justify = tk.RIGHT)
+        self.ent_keyphrase.grid(row=2, column=1, sticky='new', padx=5)
         # file name
-        self.file_name.set("out") # default value
-        ent_playback_len = tk.Entry(window, textvariable = self.file_name, justify = tk.RIGHT)
-        ent_playback_len.grid(row = 4, column = 2)
+        self.file_name.set(DEFAULT_FILE_NAME) # default value
+        self.ent_filename = tk.ttk.Entry(input_boxes, textvariable = self.file_name, justify = tk.RIGHT)
+        self.ent_filename.grid(row=3, column=1, sticky='new', padx=5)
+        # is_translating
+        self.is_translating = True
+        self.opm_translation = tk.ttk.Combobox(input_boxes, values = ["Will translate", "Do not translate"], justify = tk.RIGHT)
+        self.opm_translation.set("Do not translate")
+        self.opm_translation.grid(row=4, column=1, sticky='new', padx=5)
 
-        # fr_buttons = tk.Frame(window, relief=tk.RAISED, bd=2)
-        # fr_buttons.pack()
-
-        tk.Button(window, text="Start", command=self.threadripper).grid(row = 6, column = 2)
-        tk.Button(window, text="Stop", command=self.stop_azure).grid(row = 6, column = 1)
-
+        # start stop
+        activate_frame = tk.LabelFrame(input_boxes)
+        btn_start = tk.ttk.Button(input_boxes, text="Start", command=self.threadripper)
+        btn_start.grid(row = 5, column = 1, sticky='ew', padx=4, pady=2)
+        btn_stop = tk.ttk.Button(input_boxes, text="Stop", command=self.stop_azure)
+        btn_stop.grid(row = 5, column = 0, sticky='ew', padx=4, pady=2)
+        activate_frame.grid()
 
         window.mainloop() # Create an event loop 
 
@@ -100,30 +118,34 @@ class Rib:
     def start_azure(self):
         if (self.is_done_recording):
             self.is_done_recording = False
+            self.txt_scrolltxt.insert(tk.END, "Starting Azure...\n", "azure")
             print("Starting Azure...")
-            self.selected_device_id = self.get_selected_device_id(self.selected_device_name.get())
+            self.selected_device_id = self.get_selected_device_id(self.opm_devices.get())
             self.device_info = p.get_device_info_by_index(self.selected_device_id)
 
-            is_input = self.device_info["maxInputChannels"] > 0 and (self.device_info["name"]).find("Microphone") != -1
-            print("IS INPUT: " + str(is_input))
+            is_input = self.device_info["maxInputChannels"] > 0
             is_wasapi = (p.get_host_api_info_by_index(self.device_info["hostApi"])["name"]).find("WASAPI") != -1
             if not is_input and is_wasapi:
                 self.use_loopback = True
+                self.txt_scrolltxt.insert(tk.END, "Selection is output. Using loopback mode\n")
                 print("Selection is output. Using loopback mode")
             else:
-                print("Error: Selection is either input or does not support loopback mode\n<Tip: select an output device!>")
+                self.txt_scrolltxt.insert(tk.END, "Error: Selection is either input or does not support loopback mode\n<Tip: select an output device!>\n")
+                print("Error: Selection is either input or does not support loopback mode\n<Tip: SELECT AN OUTPUT DEVICE!>")
                 self.stop_azure()
                 return
 
             speech_recognizer.recognized.connect(self.process_input)
             speech_recognizer.start_continuous_recognition()
+            self.txt_scrolltxt.insert(tk.END, "SPEAK into your microphone or say STOP to terminate the program.\n")
             print("Speak into your microphone or say STOP to terminate the program.")
             self.record_device()
 
 
     def stop_azure(self):
         if (not self.is_done_recording and not self.is_running_it_back):
-            print("Stopping Azure...")
+            self.txt_scrolltxt.insert(tk.END, "Stopping Azure...\n", "azure")
+            print("Stopping Azure...\n")
             self.is_done_recording = True
             speech_recognizer.stop_continuous_recognition()
 
@@ -137,8 +159,9 @@ class Rib:
                         input_device_index = self.device_info["index"],
                         as_loopback = True)
 
+        self.txt_scrolltxt.insert(tk.END, "Recording...\n")
         print("Recording...")
-        for i in range(0, int(int(self.device_info["defaultSampleRate"]) / FRAMES * MAX_RECORD_SECONDS)):
+        for _ in range(0, int(int(self.device_info["defaultSampleRate"]) / FRAMES * MAX_RECORD_SECONDS)):
             if (self.is_done_recording): 
                 break
             if (len(self.recorded_frames) > int(int(self.device_info["defaultSampleRate"]) / FRAMES * int(self.playback_len.get()))):
@@ -154,22 +177,39 @@ class Rib:
             text = evt.result.text.lower()
             if (len(text) <= 0):
                 return
+            self.txt_scrolltxt.insert(tk.END, "Recognized: " + text + "\n")
             print("Recognized: " + text)
 
-            if (text.find(self.key_phrase.get()) != -1):
+            if (text.find(self.ent_keyphrase.get()) != -1):
                 self.is_running_it_back = True
+                speech_recognizer.stop_continuous_recognition()
+                self.txt_scrolltxt.insert(tk.END, "Running it back!\n")
                 print("Running it back!")
                 self.flush_frames()
-                self.play_audio(DEFAULT_FILE_NAME)
+                self.play_audio(self.ent_filename.get())
+                if self.opm_translation.get() == "Will translate":
+                    self.translate_audio(self.ent_filename.get())
+                self.is_running_it_back = False
+                speech_recognizer.start_continuous_recognition()
             elif (text.find("stop") != -1):
                 self.stop_azure()
 
 
+    def translate_audio(self, file_name):
+        audio_input = speechsdk.AudioConfig(filename=file_name)
+        speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_input)
+
+        result = speech_recognizer.recognize_once_async().get()
+        self.txt_scrolltxt.insert(tk.END, "TRANSLATION: " + result.text + "\n")
+        print(result.text)
+
+
     def flush_frames(self):
+        self.txt_scrolltxt.insert(tk.END, "Flushing frames...\n")
         print("Flushing frames...")
         #filename = input("Save as [" + DEFAULT_FILE_NAME + "]: ") or DEFAULT_FILE_NAME
 
-        wavefile = wave.open(DEFAULT_FILE_NAME, 'wb')
+        wavefile = wave.open(self.ent_filename.get(), 'wb')
         wavefile.setnchannels(CHANNELS)
         wavefile.setsampwidth(p.get_sample_size(pyaudio.paInt16))
         wavefile.setframerate(int(self.device_info["defaultSampleRate"]))
@@ -194,7 +234,6 @@ class Rib:
             data = wf.readframes(CHUNK)
 
         stream.close()
-        self.is_running_it_back = False
 
 
     def get_selected_device_id(self, device_name):
@@ -203,5 +242,5 @@ class Rib:
             if (device_info["name"] == device_name):
                 return key
   
-# call the class to run the program. 
+# launch
 Rib() 
