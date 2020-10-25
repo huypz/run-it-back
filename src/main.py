@@ -163,6 +163,7 @@ class Rib:
         if (self.is_done_recording):
             self.is_done_recording = False
             self.txt_scrolltxt.insert(tk.END, "Started Azure\n", "azure")
+            self.txt_scrolltxt.see("end")
             print("Started Azure")
             self.selected_device_id = self.get_selected_device_id(self.opm_devices.get())
             self.device_info = p.get_device_info_by_index(self.selected_device_id)
@@ -172,9 +173,11 @@ class Rib:
             if not is_input and is_wasapi:
                 self.use_loopback = True
                 self.txt_scrolltxt.insert(tk.END, "Selection is output. Using loopback mode\n")
+                self.txt_scrolltxt.see("end")
                 print("Selection is output. Using loopback mode")
             else:
                 self.txt_scrolltxt.insert(tk.END, "Error: Selection is either input or does not support loopback mode\n<Tip: select an output device!>\n")
+                self.txt_scrolltxt.see("end")
                 print("Error: Selection is either input or does not support loopback mode\n<Tip: SELECT AN OUTPUT DEVICE!>")
                 self.stop_azure()
                 return
@@ -185,6 +188,7 @@ class Rib:
                 speech_recognizer.recognized.connect(self.process_input)
                 self.is_connected = True
             self.txt_scrolltxt.insert(tk.END, "SPEAK into your microphone or say STOP to terminate the recording.\n")
+            self.txt_scrolltxt.see("end")
             print("Speak into your microphone or say STOP to terminate the recording.")
             self.record_device()
 
@@ -192,6 +196,7 @@ class Rib:
     def stop_azure(self):
         if (not self.is_done_recording and not self.is_running_it_back):
             self.txt_scrolltxt.insert(tk.END, "Stopped Azure\n", "azure")
+            self.txt_scrolltxt.see("end")
             print("Stopped Azure\n")
             self.is_done_recording = True
             self.is_running_it_back = False
@@ -209,6 +214,7 @@ class Rib:
                         as_loopback = True)
 
         self.txt_scrolltxt.insert(tk.END, "Listening...\n", "crimson")
+        self.txt_scrolltxt.see("end")
         print("Listening...")
         for _ in range(0, int(int(self.device_info["defaultSampleRate"]) / FRAMES * MAX_RECORD_SECONDS)):
             if (self.is_done_recording): 
@@ -227,12 +233,14 @@ class Rib:
             if (len(text) <= 0):
                 return
             self.txt_scrolltxt.insert(tk.END, "Recognized: " + text + "\n")
+            self.txt_scrolltxt.see("end")
             print("Recognized: " + text)
 
             if (text.find(self.ent_keyphrase.get()) != -1):
                 self.is_running_it_back = True
                 speech_recognizer.stop_continuous_recognition()
                 self.txt_scrolltxt.insert(tk.END, "RUNNING IT BACK!\n")
+                self.txt_scrolltxt.see("end")
                 print("RUNNING IT BACK!")
                 self.flush_frames()
                 self.play_audio(self.ent_filename.get())
@@ -256,10 +264,12 @@ class Rib:
         else:
             self.txt_scrolltxt.insert(tk.END, "[%s]\nTRANSLATION: %s\n" % (datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M%p"), result.text))
             print(result.text)
+        self.txt_scrolltxt.see("end")
 
 
     def flush_frames(self):
         self.txt_scrolltxt.insert(tk.END, "Flushing frames...\n")
+        self.txt_scrolltxt.see("end")
         print("Flushing frames...")
         #filename = input("Save as [" + DEFAULT_FILE_NAME + "]: ") or DEFAULT_FILE_NAME
 
