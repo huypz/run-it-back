@@ -4,6 +4,7 @@ import pyaudio, wave, os, datetime
 import tkinter as tk
 from tkinter import scrolledtext
 from ttkthemes import themed_tk as tttk
+from tkinter import messagebox
 
 speech_key, service_region = "0b7fca8db83b454cab8ea579c7bb92aa", "eastus"
 speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
@@ -26,20 +27,21 @@ amd : object
 
 class Rib: 
     def __init__(self): 
-        window = tttk.ThemedTk(theme='vista', background=True)
-        window.title("Run It Back")
+        self.window = tttk.ThemedTk(theme='vista', background=True)
+        self.window.title("Run It Back")
         #window.resizable(False, False)
-        window.iconbitmap("C:/Users/huyph/Documents/Visual Studio Code/Projects/runitback/src/rib.ico")
+        #window.iconbitmap("rib.ico")
 
-        window.rowconfigure(0, minsize=0, weight=1)
-        window.columnconfigure(2, minsize=0, weight=1)
+        self.window.rowconfigure(0, minsize=0, weight=1)
+        self.window.columnconfigure(2, minsize=0, weight=1)
 
-        self.txt_scrolltxt = scrolledtext.ScrolledText(window)
+        self.txt_scrolltxt = scrolledtext.ScrolledText(self.window)
         self.txt_scrolltxt.grid(row=0, column=1, sticky = "nsew")
         self.txt_scrolltxt.tag_config("azure", foreground="blue")
+        self.txt_scrolltxt.tag_config("crimson", foreground="red")
         
         # inputs
-        input_boxes = tk.ttk.Frame(window)
+        input_boxes = tk.ttk.Frame(self.window)
         tk.ttk.Label(input_boxes, text = "Input Device").grid(row=0, column=0, sticky='w', padx=5, pady=2)
         tk.ttk.Label(input_boxes, text = "Output Device").grid(row=1, column=0, sticky='w', padx=5, pady=2)
         tk.ttk.Label(input_boxes, text = "Playback Length").grid(row=2, column=0, sticky='w', padx=5, pady=2)
@@ -53,14 +55,14 @@ class Rib:
         self.input_devices = {}
         self.wasapi_devices = {}
         self.device_info = {}
-        self.selected_device_name = tk.StringVar(window)
+        self.selected_device_name = tk.StringVar(self.window)
         self.selected_device_id = -1
-        self.selected_input_device_name = tk.StringVar(window)
+        self.selected_input_device_name = tk.StringVar(self.window)
         self.selected_input_device_id = -1
-        self.playback_len = tk.StringVar(window)
-        self.key_phrase = tk.StringVar(window)
-        self.is_translating = tk.StringVar(window)
-        self.file_name = tk.StringVar(window)
+        self.playback_len = tk.StringVar(self.window)
+        self.key_phrase = tk.StringVar(self.window)
+        self.is_translating = tk.StringVar(self.window)
+        self.file_name = tk.StringVar(self.window)
 
         self.recorded_frames = []
         self.use_loopback = True
@@ -124,7 +126,12 @@ class Rib:
         btn_stop.grid(row = 6, column = 0, sticky='ew', padx=4, pady=2)
         activate_frame.grid()
 
-        window.mainloop() # Create an event loop 
+        self.window.protocol("WM_DELETE_WINDOW", self.close_window)
+        self.window.mainloop()  # Create an event loop
+
+    def close_window(self):
+        if messagebox.askokcancel("Run It Back", "Do you want to quit?"):
+            self.window.destroy()
 
     
     def threadripper(self):
@@ -139,6 +146,8 @@ class Rib:
             self.is_done_recording = False
             self.txt_scrolltxt.insert(tk.END, "Started Azure\n", "azure")
             print("Started Azure")
+            #self.selected_input_device_id = self.
+            print(p.get_host_api_info_by_index(self.get_selected_input_device_id(self.opm_indevices.get())))
             self.selected_device_id = self.get_selected_device_id(self.opm_devices.get())
             self.device_info = p.get_device_info_by_index(self.selected_device_id)
 
@@ -154,6 +163,7 @@ class Rib:
                 self.stop_azure()
                 return
 
+            #audio_config = AudioConfig(device_name=p.get_host_api_info_by_index())
             speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config)
             speech_recognizer.start_continuous_recognition()
             if not self.is_connected:
@@ -170,7 +180,6 @@ class Rib:
             print("Stopped Azure\n")
             self.is_done_recording = True
             self.is_running_it_back = False
-            self.is_connected = False
             speech_recognizer.stop_continuous_recognition()
 
 
@@ -183,7 +192,7 @@ class Rib:
                         input_device_index = self.device_info["index"],
                         as_loopback = True)
 
-        self.txt_scrolltxt.insert(tk.END, "Listening...\n")
+        self.txt_scrolltxt.insert(tk.END, "Listening...\n", "crimson")
         print("Listening...")
         for _ in range(0, int(int(self.device_info["defaultSampleRate"]) / FRAMES * MAX_RECORD_SECONDS)):
             if (self.is_done_recording): 
