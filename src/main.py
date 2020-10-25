@@ -2,6 +2,7 @@ import threading
 import azure.cognitiveservices.speech as speechsdk
 import pyaudio, wave, os, time
 import tkinter as tk
+from ttkthemes import themed_tk as tttk
 
 speech_key, service_region = "0b7fca8db83b454cab8ea579c7bb92aa", "eastus"
 speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
@@ -24,13 +25,13 @@ amd : object
 
 class Rib: 
     def __init__(self): 
-        window = tk.Tk()
+        window = tttk.ThemedTk(theme='vista', background=True)
         window.title("Run It Back")
 
-        tk.Label(window, text = "Output Device").grid(row = 1, column = 1, sticky = tk.W) 
-        tk.Label(window, text = "Playback Length (seconds)").grid(row = 2, column = 1, sticky = tk.W) 
-        tk.Label(window, text = "Key Phrase").grid(row = 3, column = 1, sticky = tk.W) 
-        tk.Label(window, text = "Audio File Name").grid(row = 4, column = 1, sticky = tk.W) 
+        tk.ttk.Label(window, text = "Output Device").grid(row = 1, column = 1, sticky = tk.W, padx=5, pady=2)
+        tk.ttk.Label(window, text = "Playback Length (seconds)").grid(row = 2, column = 1, sticky = tk.W, padx=5, pady=2)
+        tk.ttk.Label(window, text = "Key Phrase").grid(row = 3, column = 1, sticky = tk.W, padx=5, pady=2)
+        tk.ttk.Label(window, text = "Audio File Name").grid(row = 4, column = 1, sticky = tk.W, padx=5, pady=2)
         #tk.Label(window, text = "Audio File Name").grid(row = 5, column = 1, sticky = tk.W) 
 
 
@@ -65,26 +66,26 @@ class Rib:
                 self.selected_device_name.set(device_info["name"])
 
         # selected device
-        opm_devices = tk.OptionMenu(window, self.selected_device_name, *device_names)
-        opm_devices.grid(row = 1, column = 2) 
+        opm_devices = tk.ttk.Combobox(window, values=device_names)
+        opm_devices.grid(row = 1, column = 2, padx=5, pady=2)
         # playback len
         self.playback_len.set(10) # default value
-        ent_playback_len = tk.Entry(window, textvariable = self.playback_len, justify = tk.RIGHT)
+        ent_playback_len = tk.ttk.Entry(window, textvariable = self.playback_len, justify = tk.RIGHT)
         ent_playback_len.grid(row = 2, column = 2)
         # key phrase
         self.key_phrase.set("run it back") # default value
-        ent_playback_len = tk.Entry(window, textvariable = self.key_phrase, justify = tk.RIGHT)
+        ent_playback_len = tk.ttk.Entry(window, textvariable = self.key_phrase, justify = tk.RIGHT)
         ent_playback_len.grid(row = 3, column = 2)
         # file name
         self.file_name.set("out") # default value
-        ent_playback_len = tk.Entry(window, textvariable = self.file_name, justify = tk.RIGHT)
+        ent_playback_len = tk.ttk.Entry(window, textvariable = self.file_name, justify = tk.RIGHT)
         ent_playback_len.grid(row = 4, column = 2)
 
         # fr_buttons = tk.Frame(window, relief=tk.RAISED, bd=2)
         # fr_buttons.pack()
 
-        tk.Button(window, text="Start", command=self.threadripper).grid(row = 6, column = 2)
-        tk.Button(window, text="Stop", command=self.stop_azure).grid(row = 6, column = 1)
+        tk.ttk.Button(window, text="Start", command=self.threadripper).grid(row = 6, column = 2, pady=2)
+        tk.ttk.Button(window, text="Stop", command=self.stop_azure).grid(row = 6, column = 1, pady=2)
 
 
         window.mainloop() # Create an event loop 
