@@ -134,7 +134,13 @@ class Rib:
         btn_stop.grid(row = 6, column = 0, sticky='ew', padx=4, pady=2)
         activate_frame.grid()
 
+<<<<<<< HEAD
         self.txt_scrolltxt.insert(tk.END, "[RUN IT BACK] LOG: %s\n" % (datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M%p")))
+=======
+        # image
+        img = tk.PhotoImage(file='blackHacktx.png')
+        img_display = tk.Label(self.window, image=img).place(x=1,y=266)
+>>>>>>> d69765b525184f4ab5ddcf331d604beb4601fa45
 
         self.window.protocol("WM_DELETE_WINDOW", self.close_window)
         self.window.mainloop()  # Create an event loop
