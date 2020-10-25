@@ -4,6 +4,7 @@ import pyaudio, wave, os, datetime
 import tkinter as tk
 from tkinter import scrolledtext
 from ttkthemes import themed_tk as tttk
+from tkinter import messagebox
 
 speech_key, service_region = "0b7fca8db83b454cab8ea579c7bb92aa", "eastus"
 speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
@@ -26,19 +27,19 @@ amd : object
 
 class Rib: 
     def __init__(self): 
-        window = tttk.ThemedTk(theme='vista', background=True)
-        window.title("Run It Back")
+        self.window = tttk.ThemedTk(theme='vista', background=True)
+        self.window.title("Run It Back")
         #window.resizable(False, False)
 
-        window.rowconfigure(0, minsize=0, weight=1)
-        window.columnconfigure(2, minsize=0, weight=1)
+        self.window.rowconfigure(0, minsize=0, weight=1)
+        self.window.columnconfigure(2, minsize=0, weight=1)
 
-        self.txt_scrolltxt = scrolledtext.ScrolledText(window)
+        self.txt_scrolltxt = scrolledtext.ScrolledText(self.window)
         self.txt_scrolltxt.grid(row=0, column=1, sticky = "nsew")
         self.txt_scrolltxt.tag_config("azure", foreground="blue")
         
         # inputs
-        input_boxes = tk.ttk.Frame(window)
+        input_boxes = tk.ttk.Frame(self.window)
         tk.ttk.Label(input_boxes, text = "Output Device").grid(row=0, column=0, sticky='w', padx=5, pady=2)
         tk.ttk.Label(input_boxes, text = "Playback Length").grid(row=1, column=0, sticky='w', padx=5, pady=2)
         tk.ttk.Label(input_boxes, text = "Key Phrase").grid(row=2, column=0, sticky='w', padx=5, pady=2)
@@ -50,17 +51,18 @@ class Rib:
         self.audio_devices = {}
         self.wasapi_devices = {}
         self.device_info = {}
-        self.selected_device_name = tk.StringVar(window)
+        self.selected_device_name = tk.StringVar(self.window)
         self.selected_device_id = -1
-        self.playback_len = tk.StringVar(window)
-        self.key_phrase = tk.StringVar(window)
-        self.is_translating = tk.StringVar(window)
-        self.file_name = tk.StringVar(window)
+        self.playback_len = tk.StringVar(self.window)
+        self.key_phrase = tk.StringVar(self.window)
+        self.is_translating = tk.StringVar(self.window)
+        self.file_name = tk.StringVar(self.window)
 
         self.recorded_frames = []
         self.use_loopback = True
         self.is_done_recording = True
         self.is_running_it_back = False
+        self.is_closed = False
 
         # get all wasapi supported devices
         for i in range(0, p.get_device_count()):
@@ -105,9 +107,15 @@ class Rib:
         btn_stop.grid(row = 5, column = 0, sticky='ew', padx=4, pady=2)
         activate_frame.grid()
 
-        window.mainloop() # Create an event loop 
+        self.window.protocol("WM_DELETE_WINDOW", self.close_window)
+        self.window.mainloop() # Create an event loop
 
-    
+
+    def close_window(self):
+        if messagebox.askokcancel("Run It Back", "Do you want to quit?"):
+            self.window.destroy()
+
+
     def threadripper(self):
         global amd
         if (self.is_done_recording):
@@ -119,6 +127,7 @@ class Rib:
         if (self.is_done_recording):
             self.is_done_recording = False
             self.txt_scrolltxt.insert(tk.END, "Starting Azure...\n", "azure")
+            self.txt_scrolltxt.see(tk.END)
             print("Starting Azure...")
             self.selected_device_id = self.get_selected_device_id(self.opm_devices.get())
             self.device_info = p.get_device_info_by_index(self.selected_device_id)
@@ -128,9 +137,11 @@ class Rib:
             if not is_input and is_wasapi:
                 self.use_loopback = True
                 self.txt_scrolltxt.insert(tk.END, "Selection is output. Using loopback mode\n")
+                self.txt_scrolltxt.see(tk.END)
                 print("Selection is output. Using loopback mode")
             else:
                 self.txt_scrolltxt.insert(tk.END, "Error: Selection is either input or does not support loopback mode\n<Tip: select an output device!>\n")
+                self.txt_scrolltxt.see(tk.END)
                 print("Error: Selection is either input or does not support loopback mode\n<Tip: SELECT AN OUTPUT DEVICE!>")
                 self.stop_azure()
                 return
@@ -138,6 +149,7 @@ class Rib:
             speech_recognizer.recognized.connect(self.process_input)
             speech_recognizer.start_continuous_recognition()
             self.txt_scrolltxt.insert(tk.END, "SPEAK into your microphone or say STOP to terminate the program.\n")
+            self.txt_scrolltxt.see(tk.END)
             print("Speak into your microphone or say STOP to terminate the program.")
             self.record_device()
 
@@ -145,6 +157,7 @@ class Rib:
     def stop_azure(self):
         if (not self.is_done_recording and not self.is_running_it_back):
             self.txt_scrolltxt.insert(tk.END, "Stopping Azure...\n", "azure")
+            self.txt_scrolltxt.see(tk.END)
             print("Stopping Azure...\n")
             self.is_done_recording = True
             speech_recognizer.stop_continuous_recognition()
@@ -160,6 +173,7 @@ class Rib:
                         as_loopback = True)
 
         self.txt_scrolltxt.insert(tk.END, "Recording...\n")
+        self.txt_scrolltxt.see(tk.END)
         print("Recording...")
         for _ in range(0, int(int(self.device_info["defaultSampleRate"]) / FRAMES * MAX_RECORD_SECONDS)):
             if (self.is_done_recording): 
@@ -178,12 +192,14 @@ class Rib:
             if (len(text) <= 0):
                 return
             self.txt_scrolltxt.insert(tk.END, "Recognized: " + text + "\n")
+            self.txt_scrolltxt.see(tk.END)
             print("Recognized: " + text)
 
             if (text.find(self.ent_keyphrase.get()) != -1):
                 self.is_running_it_back = True
                 speech_recognizer.stop_continuous_recognition()
                 self.txt_scrolltxt.insert(tk.END, "Running it back!\n")
+                self.txt_scrolltxt.see(tk.END)
                 print("Running it back!")
                 self.flush_frames()
                 self.play_audio(self.ent_filename.get())
@@ -201,11 +217,13 @@ class Rib:
 
         result = speech_recognizer.recognize_once_async().get()
         self.txt_scrolltxt.insert(tk.END, "[%s]\nTRANSLATION: %s\n" % (datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M%p"), result.text))
+        self.txt_scrolltxt.see(tk.END)
         print(result.text)
 
 
     def flush_frames(self):
         self.txt_scrolltxt.insert(tk.END, "Flushing frames...\n")
+        self.txt_scrolltxt.see(tk.END)
         print("Flushing frames...")
         #filename = input("Save as [" + DEFAULT_FILE_NAME + "]: ") or DEFAULT_FILE_NAME
 
