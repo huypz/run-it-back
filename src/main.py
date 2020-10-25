@@ -31,7 +31,7 @@ class Rib:
         self.window = tttk.ThemedTk(theme='vista', background=True)
         self.window.title("Run It Back")
         #self.window.resizable(False, False)
-        self.window.iconbitmap('C:/Users/huyph/Documents/Visual Studio Code/Projects/runitback/src/rib.ico')
+        self.window.iconbitmap("rib.ico")
 
         self.window.rowconfigure(0, minsize=0, weight=1)
         self.window.columnconfigure(2, minsize=0, weight=1)
@@ -137,8 +137,8 @@ class Rib:
         self.txt_scrolltxt.insert(tk.END, "[RUN IT BACK] LOG: %s\n" % (datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M%p")))
 
         # image
-        img = tk.PhotoImage(file='C:/Users/huyph/Documents/Visual Studio Code/Projects/runitback/src/hacktx.png')
-        tk.Label(self.window, image=img).place(x=1,y=266)
+        img = tk.PhotoImage(file='hacktx.png')
+        tk.Label(self.window, image=img).place(x=15,y=253)
 
         self.window.protocol("WM_DELETE_WINDOW", self.close_window)
         self.window.mainloop()  # Create an event loop
