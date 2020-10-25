@@ -29,8 +29,8 @@ class Rib:
     def __init__(self): 
         self.window = tttk.ThemedTk(theme='vista', background=True)
         self.window.title("Run It Back")
-        #window.resizable(False, False)
-        #window.iconbitmap("rib.ico")
+        #self.window.resizable(False, False)
+        self.window.iconbitmap("rib.ico")
 
         self.window.rowconfigure(0, minsize=0, weight=1)
         self.window.columnconfigure(2, minsize=0, weight=1)
@@ -125,6 +125,9 @@ class Rib:
         btn_stop = tk.ttk.Button(input_boxes, text="Stop", command=self.stop_azure)
         btn_stop.grid(row = 6, column = 0, sticky='ew', padx=4, pady=2)
         activate_frame.grid()
+
+        # image
+
 
         self.window.protocol("WM_DELETE_WINDOW", self.close_window)
         self.window.mainloop()  # Create an event loop
