@@ -29,7 +29,7 @@ class Rib:
         window = tttk.ThemedTk(theme='vista', background=True)
         window.title("Run It Back")
         #window.resizable(False, False)
-        window.iconbitmap("rib.ico")
+        window.iconbitmap("C:/Users/huyph/Documents/Visual Studio Code/Projects/runitback/src/rib.ico")
 
         window.rowconfigure(0, minsize=0, weight=1)
         window.columnconfigure(2, minsize=0, weight=1)
@@ -139,8 +139,6 @@ class Rib:
             self.is_done_recording = False
             self.txt_scrolltxt.insert(tk.END, "Started Azure\n", "azure")
             print("Started Azure")
-            #self.selected_input_device_id = self.
-            print(p.get_host_api_info_by_index(self.get_selected_input_device_id(self.opm_indevices.get())))
             self.selected_device_id = self.get_selected_device_id(self.opm_devices.get())
             self.device_info = p.get_device_info_by_index(self.selected_device_id)
 
@@ -156,7 +154,6 @@ class Rib:
                 self.stop_azure()
                 return
 
-            #audio_config = AudioConfig(device_name=p.get_host_api_info_by_index())
             speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config)
             speech_recognizer.start_continuous_recognition()
             if not self.is_connected:
@@ -173,6 +170,7 @@ class Rib:
             print("Stopped Azure\n")
             self.is_done_recording = True
             self.is_running_it_back = False
+            self.is_connected = False
             speech_recognizer.stop_continuous_recognition()
 
 
