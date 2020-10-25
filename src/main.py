@@ -1,6 +1,6 @@
 import threading
 import azure.cognitiveservices.speech as speechsdk
-import pyaudio, wave, os, time
+import pyaudio, wave, os, datetime
 import tkinter as tk
 from tkinter import scrolledtext
 from ttkthemes import themed_tk as tttk
@@ -32,13 +32,6 @@ class Rib:
 
         window.rowconfigure(0, minsize=0, weight=1)
         window.columnconfigure(2, minsize=0, weight=1)
-        window.resizable(False, False)
-
-        tk.ttk.Label(window, text = "Output Device").grid(row = 1, column = 1, sticky = tk.W, padx=5, pady=2)
-        tk.ttk.Label(window, text = "Playback Length (seconds)").grid(row = 2, column = 1, sticky = tk.W, padx=5, pady=2)
-        tk.ttk.Label(window, text = "Key Phrase").grid(row = 3, column = 1, sticky = tk.W, padx=5, pady=2)
-        tk.ttk.Label(window, text = "Audio File Name").grid(row = 4, column = 1, sticky = tk.W, padx=5, pady=2)
-        #tk.Label(window, text = "Audio File Name").grid(row = 5, column = 1, sticky = tk.W) 
 
         self.txt_scrolltxt = scrolledtext.ScrolledText(window)
         self.txt_scrolltxt.grid(row=0, column=1, sticky = "nsew")
@@ -111,27 +104,6 @@ class Rib:
         btn_stop = tk.ttk.Button(input_boxes, text="Stop", command=self.stop_azure)
         btn_stop.grid(row = 5, column = 0, sticky='ew', padx=4, pady=2)
         activate_frame.grid()
-        opm_devices = tk.ttk.Combobox(window, values=device_names)
-        opm_devices.grid(row = 1, column = 2, padx=5, pady=2)
-        # playback len
-        self.playback_len.set(10) # default value
-        ent_playback_len = tk.ttk.Entry(window, textvariable = self.playback_len, justify = tk.RIGHT)
-        ent_playback_len.grid(row = 2, column = 2)
-        # key phrase
-        self.key_phrase.set("run it back") # default value
-        ent_playback_len = tk.ttk.Entry(window, textvariable = self.key_phrase, justify = tk.RIGHT)
-        ent_playback_len.grid(row = 3, column = 2)
-        # file name
-        self.file_name.set("out") # default value
-        ent_playback_len = tk.ttk.Entry(window, textvariable = self.file_name, justify = tk.RIGHT)
-        ent_playback_len.grid(row = 4, column = 2)
-
-        # fr_buttons = tk.Frame(window, relief=tk.RAISED, bd=2)
-        # fr_buttons.pack()
-
-        tk.ttk.Button(window, text="Start", command=self.threadripper).grid(row = 6, column = 2, pady=2)
-        tk.ttk.Button(window, text="Stop", command=self.stop_azure).grid(row = 6, column = 1, pady=2)
-
 
         window.mainloop() # Create an event loop 
 
@@ -228,7 +200,7 @@ class Rib:
         speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_input)
 
         result = speech_recognizer.recognize_once_async().get()
-        self.txt_scrolltxt.insert(tk.END, "TRANSLATION: " + result.text + "\n")
+        self.txt_scrolltxt.insert(tk.END, "[%s]\nTRANSLATION: %s\n" % (datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M%p"), result.text))
         print(result.text)
 
 
