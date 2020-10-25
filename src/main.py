@@ -110,15 +110,15 @@ class Rib:
         self.opm_devices.grid(row=1, column=1, sticky='new', padx=5)
         # playback len
         self.playback_len.set(10) # default value
-        self.ent_playback_len = tk.ttk.Entry(input_boxes, textvariable = self.playback_len, justify = tk.RIGHT)
+        self.ent_playback_len = tk.ttk.Entry(input_boxes, textvariable = self.playback_len, justify = tk.LEFT)
         self.ent_playback_len.grid(row=2, column=1, sticky='new', padx=5)
         # key phrase
         self.key_phrase.set("run it back") # default value
-        self.ent_keyphrase = tk.ttk.Entry(input_boxes, textvariable = self.key_phrase, justify = tk.RIGHT)
+        self.ent_keyphrase = tk.ttk.Entry(input_boxes, textvariable = self.key_phrase, justify = tk.LEFT)
         self.ent_keyphrase.grid(row=3, column=1, sticky='new', padx=5)
         # file name
         self.file_name.set(DEFAULT_FILE_NAME) # default value
-        self.ent_filename = tk.ttk.Entry(input_boxes, textvariable = self.file_name, justify = tk.RIGHT)
+        self.ent_filename = tk.ttk.Entry(input_boxes, textvariable = self.file_name, justify = tk.LEFT)
         self.ent_filename.grid(row=4, column=1, sticky='new', padx=5)
         # is_translating
         self.is_translating = True
@@ -157,6 +157,9 @@ class Rib:
   
 
     def start_azure(self):
+        if (int(self.playback_len.get()) > MAX_RECORD_SECONDS):
+            self.txt_scrolltxt.insert(tk.END, "Playback length is beyond the limit of %s seconds!\n" % str(MAX_RECORD_SECONDS), "crimson")
+            return
         if (self.is_done_recording):
             self.is_done_recording = False
             self.txt_scrolltxt.insert(tk.END, "Started Azure\n", "azure")
