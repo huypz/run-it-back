@@ -1,4 +1,7 @@
 # Run It Back
+
+IMPORTANT: Run the 'main' executable file in its folder along with the images (hacktx and rib)!
+
 ## Inspiration
 Due to the ongoing COVID-19 pandemic, students across the world have had to adjust to an online learning environment where it can be very easy to periodically 'blank out'. We wanted to make a program that lets students replay the last few moments of a lecture so they can follow what they missed, leaving no gaps in their notes.
 
