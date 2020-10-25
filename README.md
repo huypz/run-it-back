@@ -17,4 +17,4 @@ Most of our challenges arose from our inadequate understanding of the many modul
 Apparently, an API named WASAPI is needed for PyAudio to record speaker output using the loopback mode, and there exists a PyAudio fork specifically created to support WASAPI. We then learned how to develop a GUI using the Tkinter module. Another one of our discoveries was that we needed to run Azure’s Speech to Text code on a separate thread from the GUI to prevent the latter from locking up, requiring us to introduce Python’s threading module.
 
 ## What's next for Run It Back
-_ Run It Back _ would feature more customization like audio equalization, the ability to select specific instances of Windows to stream with, and the option to mute other audio sources during replay.
+_Run It Back_ would feature more customization like audio equalization, the ability to select specific instances of Windows to stream with, and the option to mute other audio sources during replay.
