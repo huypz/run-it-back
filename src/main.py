@@ -31,7 +31,7 @@ class Rib:
         self.window = tttk.ThemedTk(theme='vista', background=True)
         self.window.title("Run It Back")
         #self.window.resizable(False, False)
-        self.window.iconbitmap("rib.ico")
+        self.window.iconbitmap("C:/Users/huyph/Documents/Visual Studio Code/Projects/runitback/rib.ico")
 
         self.window.rowconfigure(0, minsize=0, weight=1)
         self.window.columnconfigure(2, minsize=0, weight=1)
@@ -52,7 +52,7 @@ class Rib:
         input_boxes = tk.ttk.Frame(self.window)
         tk.ttk.Label(input_boxes, text = "Input Device").grid(row=0, column=0, sticky='w', padx=5, pady=2)
         tk.ttk.Label(input_boxes, text = "Output Device").grid(row=1, column=0, sticky='w', padx=5, pady=2)
-        tk.ttk.Label(input_boxes, text = "Playback Length").grid(row=2, column=0, sticky='w', padx=5, pady=2)
+        tk.ttk.Label(input_boxes, text = "Playback Length (sec)").grid(row=2, column=0, sticky='w', padx=5, pady=2)
         tk.ttk.Label(input_boxes, text = "Key Phrase").grid(row=3, column=0, sticky='w', padx=5, pady=2)
         tk.ttk.Label(input_boxes, text = "Audio File Name").grid(row=4, column=0, sticky='w', padx=5, pady=2)
         tk.ttk.Label(input_boxes, text = "Translation Logs").grid(row=5, column=0, sticky='w', padx=5, pady=2)
@@ -134,13 +134,11 @@ class Rib:
         btn_stop.grid(row = 6, column = 0, sticky='ew', padx=4, pady=2)
         activate_frame.grid()
 
-<<<<<<< HEAD
         self.txt_scrolltxt.insert(tk.END, "[RUN IT BACK] LOG: %s\n" % (datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M%p")))
-=======
+
         # image
-        img = tk.PhotoImage(file='blackHacktx.png')
-        img_display = tk.Label(self.window, image=img).place(x=1,y=266)
->>>>>>> d69765b525184f4ab5ddcf331d604beb4601fa45
+        img = tk.PhotoImage(file='C:/Users/huyph/Documents/Visual Studio Code/Projects/runitback/hacktx.png')
+        tk.Label(self.window, image=img).place(x=1,y=266)
 
         self.window.protocol("WM_DELETE_WINDOW", self.close_window)
         self.window.mainloop()  # Create an event loop
@@ -163,8 +161,6 @@ class Rib:
             self.is_done_recording = False
             self.txt_scrolltxt.insert(tk.END, "Started Azure\n", "azure")
             print("Started Azure")
-            #self.selected_input_device_id = self.
-            print(p.get_host_api_info_by_index(self.get_selected_input_device_id(self.opm_indevices.get())))
             self.selected_device_id = self.get_selected_device_id(self.opm_devices.get())
             self.device_info = p.get_device_info_by_index(self.selected_device_id)
 
@@ -180,14 +176,13 @@ class Rib:
                 self.stop_azure()
                 return
 
-            #audio_config = AudioConfig(device_name=p.get_host_api_info_by_index())
             speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config)
             speech_recognizer.start_continuous_recognition()
             if not self.is_connected:
                 speech_recognizer.recognized.connect(self.process_input)
                 self.is_connected = True
-            self.txt_scrolltxt.insert(tk.END, "SPEAK into your microphone or say STOP to terminate the program.\n")
-            print("Speak into your microphone or say STOP to terminate the program.")
+            self.txt_scrolltxt.insert(tk.END, "SPEAK into your microphone or say STOP to terminate the recording.\n")
+            print("Speak into your microphone or say STOP to terminate the recording.")
             self.record_device()
 
 
@@ -197,6 +192,7 @@ class Rib:
             print("Stopped Azure\n")
             self.is_done_recording = True
             self.is_running_it_back = False
+            self.is_connected = False
             speech_recognizer.stop_continuous_recognition()
 
 
@@ -250,8 +246,13 @@ class Rib:
         speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_input)
 
         result = speech_recognizer.recognize_once_async().get()
-        self.txt_scrolltxt.insert(tk.END, "[%s]\nTRANSLATION: %s\n" % (datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M%p"), result.text))
-        print(result.text)
+        if (len(result.text) <= 0):
+            self.txt_scrolltxt.insert(tk.END, "[%s]\nTRANSLATION: " % (datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M%p")))
+            self.txt_scrolltxt.insert(tk.END, "inaudible\n", "crimson")
+            print(result.text)
+        else:
+            self.txt_scrolltxt.insert(tk.END, "[%s]\nTRANSLATION: %s\n" % (datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M%p"), result.text))
+            print(result.text)
 
 
     def flush_frames(self):
