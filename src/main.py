@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter import scrolledtext
 from ttkthemes import themed_tk as tttk
 from tkinter import messagebox
+from tkinter.filedialog import asksaveasfilename
 
 speech_key, service_region = "0b7fca8db83b454cab8ea579c7bb92aa", "eastus"
 speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
@@ -39,6 +40,13 @@ class Rib:
         self.txt_scrolltxt.grid(row=0, column=1, sticky = "nsew")
         self.txt_scrolltxt.tag_config("azure", foreground="blue")
         self.txt_scrolltxt.tag_config("crimson", foreground="red")
+
+        self.menu = tk.Menu(self.window)
+        self.window.config(menu = self.menu)
+        self.file_menu = tk.Menu(self.menu)
+        self.file_menu.add_command(label = "Save File", command = self.save_file)
+        self.file_menu.add_command(label = "Exit", command = self.close_window)
+        self.menu.add_cascade(label= "File", menu = self.file_menu)
         
         # inputs
         input_boxes = tk.ttk.Frame(self.window)
@@ -126,11 +134,9 @@ class Rib:
         btn_stop.grid(row = 6, column = 0, sticky='ew', padx=4, pady=2)
         activate_frame.grid()
 
-        # image
-
-
         self.window.protocol("WM_DELETE_WINDOW", self.close_window)
         self.window.mainloop()  # Create an event loop
+
 
     def close_window(self):
         if messagebox.askokcancel("Run It Back", "Do you want to quit?"):
@@ -270,6 +276,19 @@ class Rib:
             data = wf.readframes(CHUNK)
 
         stream.close()
+
+
+    def save_file(self):
+        filepath = asksaveasfilename(
+            defaultextension="txt",
+            filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")],
+        )
+        if not filepath:
+            return
+        with open(filepath, "w") as output_file:
+            text = self.txt_scrolltxt.get(1.0, tk.END)
+            output_file.write(text)
+        self.window.title(f"Log - {filepath}")
 
 
     def get_selected_input_device_id(self, device_name):
