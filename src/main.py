@@ -27,6 +27,7 @@ class Rib:
     def __init__(self): 
         window = tttk.ThemedTk(theme='vista', background=True)
         window.title("Run It Back")
+        window.resizable(False, False)
 
         tk.ttk.Label(window, text = "Output Device").grid(row = 1, column = 1, sticky = tk.W, padx=5, pady=2)
         tk.ttk.Label(window, text = "Playback Length (seconds)").grid(row = 2, column = 1, sticky = tk.W, padx=5, pady=2)
